@@ -8,7 +8,7 @@ export default function About() {
         <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-12">
           <div className="lg:w-1/2">
             <img
-              src= 'src/assets/half.jpg'
+              src= '/images/half.jpg'
               alt="Doctor in consultation"
               className="rounded-lg shadow-lg w-full"
             />

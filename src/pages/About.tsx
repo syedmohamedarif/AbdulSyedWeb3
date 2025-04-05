@@ -19,7 +19,7 @@ export default function About() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <img
-              src= 'public/images/half.jpg'
+              src= '/images/half.jpg'
               alt="Doctor in consultation"
               className="rounded-lg shadow-lg w-full"
             />
