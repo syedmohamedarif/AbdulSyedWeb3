@@ -12,7 +12,7 @@ export default function Hero() {
     <div className="relative min-h-[300px] xs:min-h-[400px] sm:min-h-[500px] md:h-[600px]">
       <div className="absolute inset-0">
         <img
-          src="/public/images/operationtheatre.jpeg"
+          src="/images/operationtheatre.jpeg"
           alt="Medical facility"
           className="w-full h-full object-cover"
         />
