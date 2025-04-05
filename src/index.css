@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Add padding to sections to account for fixed header */
+section {
+  scroll-margin-top: 80px;
+}
