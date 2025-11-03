@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mrabdulsyed.com/sitemap.xml
+
