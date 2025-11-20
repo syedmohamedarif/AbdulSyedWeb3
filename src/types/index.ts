@@ -29,3 +29,15 @@ export interface Service {
   title: string;
   description: string;
 }
+
+// Review Types
+export interface Review {
+  id?: string;
+  name: string;
+  email: string;
+  rating: number;
+  comment: string;
+  approved: boolean;
+  created_at?: string;
+  updated_at?: string;
+}

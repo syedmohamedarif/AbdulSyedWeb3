@@ -1,10 +1,13 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Header, Footer } from './components/layout';
-import { Hero, Services } from './components/sections';
+import { Hero, Services, ReviewsDisplay, ReviewForm } from './components/sections';
 import ImageGallery from './components/sections/ImageGallery';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import AdminLogin from './pages/AdminLogin';
+import AdminPanel from './pages/AdminPanel';
 
-function App() {
+function HomePage() {
   return (
     <div className="min-h-screen">
       <Header />
@@ -19,12 +22,30 @@ function App() {
           <About />
         </section>
         <ImageGallery />
+        <ReviewsDisplay />
+        <section id="reviews-form" className="py-12 md:py-20 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-2xl">
+            <ReviewForm />
+          </div>
+        </section>
         <section id="contact">
           <Contact />
         </section>
       </main>
       <Footer />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminPanel />} />
+      </Routes>
+    </Router>
   );
 }
 

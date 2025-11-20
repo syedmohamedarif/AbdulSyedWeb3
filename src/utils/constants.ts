@@ -20,9 +20,10 @@ export const CONTACT_INFO2 = {
 
 // Navigation links
 export const NAV_LINKS = [
-  { href: "/#home", label: "Home" },
-  { href: "/#about", label: "About" },
-  { href: "/#services", label: "Services" },
-  { href: "/#contact", label: "Contact" },
-  { href: "/#book-appointment", label: "Book Appointment" }
+  { href: "/#home", label: "Home", targetId: "home" },
+  { href: "/#about", label: "About", targetId: "about" },
+  { href: "/#services", label: "Services", targetId: "services" },
+  { href: "/#reviews", label: "Reviews", targetId: "reviews" },
+  { href: "/#contact", label: "Contact", targetId: "contact" },
+  { href: "/#reviews-form", label: "Feedback", targetId: "reviews-form" }
 ];

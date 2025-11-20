@@ -7,13 +7,23 @@ interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
   onScheduleClick: () => void;
+  onNavigate: (targetId?: string) => void;
 }
 
-export default function MobileMenu({ isOpen, onClose, onScheduleClick }: MobileMenuProps) {
+export default function MobileMenu({ isOpen, onClose, onScheduleClick, onNavigate }: MobileMenuProps) {
   if (!isOpen) return null;
 
   const handleScheduleClick = () => {
     onScheduleClick();
+    onClose();
+  };
+
+  const handleNavClick = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    targetId?: string
+  ) => {
+    event.preventDefault();
+    onNavigate(targetId);
     onClose();
   };
 
@@ -32,7 +42,7 @@ export default function MobileMenu({ isOpen, onClose, onScheduleClick }: MobileM
               key={link.label}
               href={link.href}
               className="text-white text-2xl hover:text-blue-200 transition-colors"
-              onClick={onClose}
+              onClick={(event) => handleNavClick(event, link.targetId)}
             >
               {link.label}
             </a>

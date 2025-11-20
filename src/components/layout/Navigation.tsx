@@ -21,6 +21,27 @@ export default function Navigation() {
     });
   };
 
+  const scrollToSection = (targetId?: string) => {
+    if (!targetId) return;
+    if (targetId === 'home') {
+      scrollToTop();
+    } else {
+      const element = document.getElementById(targetId);
+      element?.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleNavClick = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    targetId?: string
+  ) => {
+    if (targetId) {
+      event.preventDefault();
+      scrollToSection(targetId);
+    }
+  };
+
   return (
     <>
       <nav className="bg-white shadow-md">
@@ -53,11 +74,12 @@ export default function Navigation() {
                   key={link.label}
                   href={link.href} 
                   className="text-gray-600 hover:text-blue-900"
+                  onClick={(event) => handleNavClick(event, link.targetId)}
                 >
                   {link.label}
                 </a>
               ))}
-              <Button onClick={handleScheduleClick}>Schedule Consultation</Button>
+              <Button onClick={handleScheduleClick}>Book Appointment</Button>
             </div>
           </div>
         </Container>
@@ -67,6 +89,7 @@ export default function Navigation() {
         isOpen={isMobileMenuOpen} 
         onClose={() => setIsMobileMenuOpen(false)}
         onScheduleClick={handleScheduleClick}
+        onNavigate={scrollToSection}
       />
     </>
   );

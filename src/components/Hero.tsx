@@ -20,12 +20,13 @@ export default function Hero() {
       </div>
       <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
         <div className="max-w-2xl text-white">
-          <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-4 sm:mb-6 md:mb-8">
-            Welcome <p className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl mt-2">Mr Abdul Syed (MBBS, MRCSEd, FRCS)</p>
+          <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 md:mb-8">
+          Mr Abdul Syed (MBBS, MRCSEd, FRCS)
+            <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl mt-4 sm:mt-6">Consultant Breast Surgeon in Chelmsford, Essex, UK</p>
           </h1>
           <p className="text-base sm:text-lg md:text-xl mb-6 md:mb-8">
-            Providing comprehensive care with the latest medical advancements and 
-            a commitment to patient-centered treatment.
+            Leading oncoplastic breast surgeon serving in Essex, UK with
+            compassionate, patient-centred care and the latest surgical advances.
           </p>
           <div className="flex flex-col xs:flex-row space-y-3 xs:space-y-0 xs:space-x-4 items-center">
             <Button 
