@@ -9,6 +9,7 @@ import BlogPostPage from './pages/BlogPost';
 import AdminLogin from './pages/AdminLogin';
 import AdminPanel from './pages/AdminPanel';
 import BlogAdminPanel from './pages/BlogAdminPanel';
+import TestSupabase from './pages/TestSupabase';
 
 function HomePage() {
   return (
@@ -50,6 +51,7 @@ function App() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/blog" element={<BlogAdminPanel />} />
+        <Route path="/test-supabase" element={<TestSupabase />} />
       </Routes>
     </Router>
   );
