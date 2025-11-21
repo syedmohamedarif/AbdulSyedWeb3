@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase } from '../config/supabaseClient';
+import { db } from '../config/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { BlogPost } from '../types';
 import Container from '../components/ui/Container';
 
@@ -16,20 +17,20 @@ export default function BlogPostPage() {
   }, [slug]);
 
   const loadBlogPost = async (postSlug: string) => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
     try {
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .eq('slug', postSlug)
-        .eq('published', true)
-        .single();
-
-      if (error) throw error;
-      setPost(data);
+      const q = query(
+        collection(db, 'blog_posts'),
+        where('slug', '==', postSlug),
+        where('published', '==', true)
+      );
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        setPost({
+          id: doc.id,
+          ...doc.data(),
+        } as BlogPost);
+      }
     } catch (error) {
       console.error('Error loading blog post:', error);
     } finally {
@@ -116,4 +117,3 @@ export default function BlogPostPage() {
     </main>
   );
 }
-

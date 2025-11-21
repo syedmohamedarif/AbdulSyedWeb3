@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../config/supabaseClient';
+import { db } from '../../config/firebase';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Review } from '../../types';
 import Container from '../ui/Container';
 
@@ -12,19 +13,21 @@ export default function ReviewsDisplay() {
   }, []);
 
   const loadApprovedReviews = async () => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
     try {
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('*')
-        .eq('approved', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setReviews(data || []);
+      const q = query(
+        collection(db, 'reviews'),
+        where('approved', '==', true),
+        orderBy('created_at', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      const reviewsData: Review[] = [];
+      querySnapshot.forEach((doc) => {
+        reviewsData.push({
+          id: doc.id,
+          ...doc.data(),
+        } as Review);
+      });
+      setReviews(reviewsData);
     } catch (error) {
       console.error('Error loading reviews:', error);
     } finally {
@@ -82,4 +85,3 @@ export default function ReviewsDisplay() {
     </section>
   );
 }
-

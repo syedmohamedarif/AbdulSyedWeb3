@@ -1,8 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { 
+  collection, 
+  getDocs, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  query, 
+  orderBy,
+  onSnapshot 
+} from 'firebase/firestore';
 import { Review } from '../types';
 import Button from '../components/ui/Button';
-import { supabase } from '../config/supabaseClient';
+import { auth, db } from '../config/firebase';
 
 export default function AdminPanel() {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -18,33 +30,34 @@ export default function AdminPanel() {
   });
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!supabase) {
+  // Define loadReviews function
+  const loadReviews = async () => {
+    try {
+      setLoading(true);
+      console.log('🔄 Loading reviews from Firebase...');
+      const q = query(collection(db, 'reviews'), orderBy('created_at', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const reviewsData: Review[] = [];
+      querySnapshot.forEach((doc) => {
+        reviewsData.push({
+          id: doc.id,
+          ...doc.data(),
+        } as Review);
+      });
+      console.log(`✅ Loaded ${reviewsData.length} reviews`);
+      setReviews(reviewsData);
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+      alert('Error loading reviews. Check console for details.');
+    } finally {
       setLoading(false);
-      setAuthenticated(false);
-      navigate('/admin/login');
-      return;
     }
+  };
 
-    let isMounted = true;
-
-    const init = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session && isMounted) {
-        setAuthenticated(true);
-        loadReviews();
-      } else if (isMounted) {
-        setAuthenticated(false);
-        navigate('/admin/login');
-      }
-    };
-
-    init();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
+  // Authentication and initial load
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
         setAuthenticated(true);
         loadReviews();
       } else {
@@ -53,40 +66,41 @@ export default function AdminPanel() {
       }
     });
 
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
+    return () => unsubscribe();
   }, [navigate]);
 
-  const loadReviews = async () => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('*')
-        .order('created_at', { ascending: false });
+  // Set up real-time listener for reviews
+  useEffect(() => {
+    if (!authenticated) return;
 
-      if (error) throw error;
-      setReviews(data || []);
-    } catch (error) {
-      console.error('Error loading reviews:', error);
-    } finally {
+    console.log('🔔 Setting up real-time listener for reviews...');
+    const q = query(collection(db, 'reviews'), orderBy('created_at', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const reviewsData: Review[] = [];
+      snapshot.forEach((doc) => {
+        reviewsData.push({
+          id: doc.id,
+          ...doc.data(),
+        } as Review);
+      });
+      console.log(`📢 Reviews updated: ${reviewsData.length} reviews`);
+      setReviews(reviewsData);
       setLoading(false);
-    }
-  };
+    }, (error) => {
+      console.error('Error in real-time listener:', error);
+      // Fallback to manual load
+      loadReviews();
+    });
+
+    return () => {
+      console.log('🔕 Unsubscribing from reviews listener...');
+      unsubscribe();
+    };
+  }, [authenticated]);
 
   const handleLogout = async () => {
-    if (!supabase) {
-      navigate('/admin/login');
-      return;
-    }
     try {
-      await supabase.auth.signOut();
+      await signOut(auth);
       navigate('/admin/login');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -95,31 +109,19 @@ export default function AdminPanel() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase) {
-      alert('Supabase is not configured. Please set up your environment variables.');
-      return;
-    }
     try {
       if (editingReview?.id) {
-        const { error } = await supabase
-          .from('reviews')
-          .update({
-            ...formData,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', editingReview.id);
-
-        if (error) throw error;
+        const reviewRef = doc(db, 'reviews', editingReview.id);
+        await updateDoc(reviewRef, {
+          ...formData,
+          updated_at: new Date().toISOString(),
+        });
       } else {
-        const { error } = await supabase.from('reviews').insert([
-          {
-            ...formData,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ]);
-
-        if (error) throw error;
+        await addDoc(collection(db, 'reviews'), {
+          ...formData,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
       }
       setFormData({
         name: '',
@@ -129,7 +131,7 @@ export default function AdminPanel() {
         approved: false,
       });
       setEditingReview(null);
-      loadReviews();
+      // Real-time listener will update automatically
     } catch (error) {
       console.error('Error saving review:', error);
       alert('Error saving review. Please try again.');
@@ -149,14 +151,9 @@ export default function AdminPanel() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this review?')) return;
-    if (!supabase) {
-      alert('Supabase is not configured. Please set up your environment variables.');
-      return;
-    }
     try {
-      const { error } = await supabase.from('reviews').delete().eq('id', id);
-      if (error) throw error;
-      loadReviews();
+      await deleteDoc(doc(db, 'reviews', id));
+      // Real-time listener will update automatically
     } catch (error) {
       console.error('Error deleting review:', error);
       alert('Error deleting review. Please try again.');
@@ -164,21 +161,13 @@ export default function AdminPanel() {
   };
 
   const toggleApproval = async (review: Review) => {
-    if (!supabase) {
-      alert('Supabase is not configured. Please set up your environment variables.');
-      return;
-    }
     try {
-      const { error } = await supabase
-        .from('reviews')
-        .update({
-          approved: !review.approved,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', review.id!);
-
-      if (error) throw error;
-      loadReviews();
+      const reviewRef = doc(db, 'reviews', review.id!);
+      await updateDoc(reviewRef, {
+        approved: !review.approved,
+        updated_at: new Date().toISOString(),
+      });
+      // Real-time listener will update automatically
     } catch (error) {
       console.error('Error updating review:', error);
     }
@@ -363,4 +352,3 @@ export default function AdminPanel() {
     </div>
   );
 }
-

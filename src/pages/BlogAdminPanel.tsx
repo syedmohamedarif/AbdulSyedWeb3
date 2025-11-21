@@ -1,8 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../config/supabaseClient';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { 
+  collection, 
+  getDocs, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  query, 
+  orderBy 
+} from 'firebase/firestore';
 import { BlogPost } from '../types';
 import Button from '../components/ui/Button';
+import { auth, db } from '../config/firebase';
 
 export default function BlogAdminPanel() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -21,32 +32,8 @@ export default function BlogAdminPanel() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!supabase) {
-      setLoading(false);
-      setAuthenticated(false);
-      navigate('/admin/login');
-      return;
-    }
-
-    let isMounted = true;
-
-    const init = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session && isMounted) {
-        setAuthenticated(true);
-        loadPosts();
-      } else if (isMounted) {
-        setAuthenticated(false);
-        navigate('/admin/login');
-      }
-    };
-
-    init();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
         setAuthenticated(true);
         loadPosts();
       } else {
@@ -55,26 +42,22 @@ export default function BlogAdminPanel() {
       }
     });
 
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
+    return () => unsubscribe();
   }, [navigate]);
 
   const loadPosts = async () => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setPosts(data || []);
+      const q = query(collection(db, 'blog_posts'), orderBy('created_at', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const postsData: BlogPost[] = [];
+      querySnapshot.forEach((doc) => {
+        postsData.push({
+          id: doc.id,
+          ...doc.data(),
+        } as BlogPost);
+      });
+      setPosts(postsData);
     } catch (error) {
       console.error('Error loading blog posts:', error);
     } finally {
@@ -101,31 +84,19 @@ export default function BlogAdminPanel() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase) {
-      alert('Supabase is not configured. Please set up your environment variables.');
-      return;
-    }
     try {
       if (editingPost?.id) {
-        const { error } = await supabase
-          .from('blog_posts')
-          .update({
-            ...formData,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', editingPost.id);
-
-        if (error) throw error;
+        const postRef = doc(db, 'blog_posts', editingPost.id);
+        await updateDoc(postRef, {
+          ...formData,
+          updated_at: new Date().toISOString(),
+        });
       } else {
-        const { error } = await supabase.from('blog_posts').insert([
-          {
-            ...formData,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ]);
-
-        if (error) throw error;
+        await addDoc(collection(db, 'blog_posts'), {
+          ...formData,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
       }
       setFormData({
         title: '',
@@ -159,13 +130,8 @@ export default function BlogAdminPanel() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this blog post?')) return;
-    if (!supabase) {
-      alert('Supabase is not configured. Please set up your environment variables.');
-      return;
-    }
     try {
-      const { error } = await supabase.from('blog_posts').delete().eq('id', id);
-      if (error) throw error;
+      await deleteDoc(doc(db, 'blog_posts', id));
       loadPosts();
     } catch (error) {
       console.error('Error deleting blog post:', error);
@@ -174,20 +140,12 @@ export default function BlogAdminPanel() {
   };
 
   const togglePublish = async (post: BlogPost) => {
-    if (!supabase) {
-      alert('Supabase is not configured. Please set up your environment variables.');
-      return;
-    }
     try {
-      const { error } = await supabase
-        .from('blog_posts')
-        .update({
-          published: !post.published,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', post.id!);
-
-      if (error) throw error;
+      const postRef = doc(db, 'blog_posts', post.id!);
+      await updateDoc(postRef, {
+        published: !post.published,
+        updated_at: new Date().toISOString(),
+      });
       loadPosts();
     } catch (error) {
       console.error('Error updating blog post:', error);
@@ -195,12 +153,8 @@ export default function BlogAdminPanel() {
   };
 
   const handleLogout = async () => {
-    if (!supabase) {
-      navigate('/admin/login');
-      return;
-    }
     try {
-      await supabase.auth.signOut();
+      await signOut(auth);
       navigate('/admin/login');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -385,4 +339,3 @@ export default function BlogAdminPanel() {
     </div>
   );
 }
-

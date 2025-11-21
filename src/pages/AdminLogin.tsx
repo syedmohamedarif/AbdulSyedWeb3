@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import Button from '../components/ui/Button';
-import { supabase } from '../config/supabaseClient';
+import { auth } from '../config/firebase';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -15,21 +16,8 @@ export default function AdminLogin() {
     setError('');
     setLoading(true);
 
-    if (!supabase) {
-      setError('Supabase is not configured. Please set up your environment variables.');
-      setLoading(false);
-      return;
-    }
-
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        throw error;
-      }
+      await signInWithEmailAndPassword(auth, email, password);
       navigate('/admin');
     } catch (err: any) {
       setError(err.message || 'Invalid credentials. Please try again.');
@@ -100,4 +88,3 @@ export default function AdminLogin() {
     </div>
   );
 }
-

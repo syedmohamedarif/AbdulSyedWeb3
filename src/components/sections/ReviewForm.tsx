@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Button from '../ui/Button';
-import { supabase } from '../../config/supabaseClient';
+import { db } from '../../config/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 interface ReviewData {
   name: string;
@@ -20,20 +21,6 @@ export default function ReviewForm() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  // Debug: Check if Supabase is configured
-  useEffect(() => {
-    if (!supabase) {
-      console.error('⚠️ Supabase is NOT configured!');
-      console.error('Environment variables:', {
-        hasUrl: !!import.meta.env.VITE_SUPABASE_URL,
-        hasKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
-        url: import.meta.env.VITE_SUPABASE_URL || 'MISSING',
-      });
-    } else {
-      console.log('✅ Supabase is configured');
-    }
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -41,49 +28,25 @@ export default function ReviewForm() {
       setSubmitStatus('idle');
       setErrorMessage('');
 
-      // Save review as pending in Supabase first
-      let supabaseSuccess = false;
-      if (!supabase) {
-        console.error('❌ CRITICAL: Supabase is not configured!');
-        console.error('Environment check:', {
-          VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL ? 'SET' : 'MISSING',
-          VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY ? 'SET' : 'MISSING',
+      // Save review as pending in Firebase
+      let firebaseSuccess = false;
+      try {
+        console.log('🔄 Attempting to save review to Firebase...');
+        await addDoc(collection(db, 'reviews'), {
+          name: formData.name,
+          email: formData.email,
+          rating: formData.rating,
+          comment: formData.comment,
+          approved: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
-        console.error('⚠️ Review will ONLY be sent via email. It will NOT appear in admin panel.');
-        console.error('💡 Fix: Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to Netlify environment variables');
-      } else {
-        console.log('🔄 Attempting to save review to Supabase...');
-        try {
-          const { data, error: supabaseError } = await supabase.from('reviews').insert([
-            {
-              name: formData.name,
-              email: formData.email,
-              rating: formData.rating,
-              comment: formData.comment,
-              approved: false,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            },
-          ]).select();
-
-          if (supabaseError) {
-            console.error('❌ Supabase insert FAILED:', supabaseError);
-            console.error('Error details:', {
-              message: supabaseError.message,
-              details: supabaseError.details,
-              hint: supabaseError.hint,
-              code: supabaseError.code
-            });
-            // Still try to send email, but log the error
-          } else {
-            supabaseSuccess = true;
-            console.log('✅ Review saved to Supabase successfully:', data);
-          }
-        } catch (supabaseErr: any) {
-          console.error('❌ Supabase exception:', supabaseErr);
-          console.error('Error details:', supabaseErr.message || supabaseErr);
-          // Continue anyway - email is more important
-        }
+        firebaseSuccess = true;
+        console.log('✅ Review saved to Firebase successfully');
+      } catch (firebaseErr: any) {
+        console.error('❌ Firebase exception:', firebaseErr);
+        console.error('Error details:', firebaseErr.message || firebaseErr);
+        // Continue anyway - email is more important
       }
 
       const formattedMessage = `
@@ -128,17 +91,11 @@ Please review and approve this review in the admin panel.
           comment: '',
         });
         
-        // Log success status with detailed info
-        if (supabaseSuccess) {
-          console.log('✅ Review submitted successfully - saved to Supabase and email sent');
-        } else if (!supabase) {
-          console.error('⚠️ Review submitted - email sent but NOT saved to Supabase.');
-          console.error('⚠️ Reason: Supabase is not configured (environment variables missing in Netlify)');
-          console.error('💡 Fix: Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to Netlify environment variables');
+        if (firebaseSuccess) {
+          console.log('✅ Review submitted successfully - saved to Firebase and email sent');
         } else {
-          console.error('⚠️ Review submitted - email sent but NOT saved to Supabase.');
-          console.error('⚠️ Reason: Supabase insert failed (check RLS policies or network)');
-          console.error('💡 Check: Run FIX_REVIEWS_RLS.sql in Supabase SQL Editor');
+          console.error('⚠️ Review submitted - email sent but NOT saved to Firebase.');
+          console.error('⚠️ Reason: Firebase insert failed');
         }
       } else {
         throw new Error(result.message || 'Failed to submit review');
@@ -171,11 +128,6 @@ Please review and approve this review in the admin panel.
       {submitStatus === 'success' && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
           <p className="text-green-600 font-semibold">Thank you for your review!</p>
-          {!supabase && (
-            <p className="text-yellow-700 text-sm mt-2">
-              ⚠️ Note: Review sent via email only. Supabase is not configured, so it won't appear in admin panel.
-            </p>
-          )}
           <p className="text-green-600 text-sm mt-1">It will be published after approval.</p>
         </div>
       )}
@@ -185,22 +137,7 @@ Please review and approve this review in the admin panel.
           {errorMessage && (
             <p className="text-red-600 text-sm mt-1">{errorMessage}</p>
           )}
-          {!supabase && (
-            <p className="text-red-600 text-sm mt-2 font-semibold">
-              ⚠️ Supabase is not configured. Please contact the website administrator.
-            </p>
-          )}
           <p className="text-red-600 text-sm mt-1">Please check your internet connection and try again.</p>
-        </div>
-      )}
-      
-      {/* Debug info - only show in development */}
-      {import.meta.env.DEV && (
-        <div className="mb-4 p-2 bg-gray-100 border border-gray-300 rounded text-xs">
-          <p><strong>Debug Info:</strong></p>
-          <p>Supabase configured: {supabase ? '✅ Yes' : '❌ No'}</p>
-          <p>URL set: {import.meta.env.VITE_SUPABASE_URL ? '✅ Yes' : '❌ No'}</p>
-          <p>Key set: {import.meta.env.VITE_SUPABASE_ANON_KEY ? '✅ Yes' : '❌ No'}</p>
         </div>
       )}
       
@@ -251,4 +188,3 @@ Please review and approve this review in the admin panel.
     </form>
   );
 }
-
