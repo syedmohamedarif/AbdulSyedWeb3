@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '../ui/Button';
 import { supabase } from '../../config/supabaseClient';
 
@@ -20,6 +20,20 @@ export default function ReviewForm() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
+  // Debug: Check if Supabase is configured
+  useEffect(() => {
+    if (!supabase) {
+      console.error('⚠️ Supabase is NOT configured!');
+      console.error('Environment variables:', {
+        hasUrl: !!import.meta.env.VITE_SUPABASE_URL,
+        hasKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+        url: import.meta.env.VITE_SUPABASE_URL || 'MISSING',
+      });
+    } else {
+      console.log('✅ Supabase is configured');
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -29,7 +43,16 @@ export default function ReviewForm() {
 
       // Save review as pending in Supabase first
       let supabaseSuccess = false;
-      if (supabase) {
+      if (!supabase) {
+        console.error('❌ CRITICAL: Supabase is not configured!');
+        console.error('Environment check:', {
+          VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL ? 'SET' : 'MISSING',
+          VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY ? 'SET' : 'MISSING',
+        });
+        console.error('⚠️ Review will ONLY be sent via email. It will NOT appear in admin panel.');
+        console.error('💡 Fix: Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to Netlify environment variables');
+      } else {
+        console.log('🔄 Attempting to save review to Supabase...');
         try {
           const { data, error: supabaseError } = await supabase.from('reviews').insert([
             {
@@ -44,7 +67,7 @@ export default function ReviewForm() {
           ]).select();
 
           if (supabaseError) {
-            console.error('Supabase insert failed:', supabaseError);
+            console.error('❌ Supabase insert FAILED:', supabaseError);
             console.error('Error details:', {
               message: supabaseError.message,
               details: supabaseError.details,
@@ -54,15 +77,13 @@ export default function ReviewForm() {
             // Still try to send email, but log the error
           } else {
             supabaseSuccess = true;
-            console.log('Review saved to Supabase:', data);
+            console.log('✅ Review saved to Supabase successfully:', data);
           }
         } catch (supabaseErr: any) {
-          console.error('Supabase error:', supabaseErr);
+          console.error('❌ Supabase exception:', supabaseErr);
           console.error('Error details:', supabaseErr.message || supabaseErr);
           // Continue anyway - email is more important
         }
-      } else {
-        console.warn('Supabase not configured - review will only be sent via email');
       }
 
       const formattedMessage = `
