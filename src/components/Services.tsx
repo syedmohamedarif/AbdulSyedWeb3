@@ -16,7 +16,7 @@ const services = [
   {
     icon: <ClipboardCheck className="w-12 h-12 text-blue-900" />,
     title: "Treatment Planning",
-    description: "Personalized treatment strategies tailored to your specific needs."
+    description: "Personalised treatment strategies tailored to your specific needs."
   },
   {
     icon: <Activity className="w-12 h-12 text-blue-900" />,

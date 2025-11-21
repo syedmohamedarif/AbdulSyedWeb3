@@ -23,6 +23,8 @@ export default function AreasOfInterest({ className, ...props }: PublicationsPro
         <li>Benign breast conditions</li>
         <li>Male breast cancer & lumps</li>
         <li>One-Step Sentinel Node Sampling and Intra-operative Sentinel Node Sampling </li>
+        <li>Gall Stones</li>
+        <li>Laproscopy</li>
         <li>Hernia</li>
         <li>Lumps and Bumps - lesions (incl. lesions on the head and neck)</li>
       </ul>
