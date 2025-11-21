@@ -29,7 +29,7 @@ export default function Hero() {
       </div>
       <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
         <div className="max-w-2xl text-white">
-          <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 md:mb-8">
+          <h1 className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6 md:mb-8">
             Consultant Breast Surgeon in Essex, UK
             <p className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl mt-2">Mr Abdul Syed (MBBS, MRCSEd, FRCS)</p>
           </h1>
