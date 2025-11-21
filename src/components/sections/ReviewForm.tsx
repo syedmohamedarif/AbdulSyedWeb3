@@ -27,27 +27,42 @@ export default function ReviewForm() {
       setSubmitStatus('idle');
       setErrorMessage('');
 
-      // Try to save review as pending in Supabase (optional - don't fail if this doesn't work)
+      // Save review as pending in Supabase first
+      let supabaseSuccess = false;
       if (supabase) {
         try {
-          const { error: supabaseError } = await supabase.from('reviews').insert([
+          const { data, error: supabaseError } = await supabase.from('reviews').insert([
             {
               name: formData.name,
               email: formData.email,
               rating: formData.rating,
               comment: formData.comment,
               approved: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
             },
-          ]);
+          ]).select();
 
           if (supabaseError) {
-            console.warn('Supabase insert failed (will continue with email):', supabaseError);
-            // Continue anyway - email is more important
+            console.error('Supabase insert failed:', supabaseError);
+            console.error('Error details:', {
+              message: supabaseError.message,
+              details: supabaseError.details,
+              hint: supabaseError.hint,
+              code: supabaseError.code
+            });
+            // Still try to send email, but log the error
+          } else {
+            supabaseSuccess = true;
+            console.log('Review saved to Supabase:', data);
           }
-        } catch (supabaseErr) {
-          console.warn('Supabase error (will continue with email):', supabaseErr);
+        } catch (supabaseErr: any) {
+          console.error('Supabase error:', supabaseErr);
+          console.error('Error details:', supabaseErr.message || supabaseErr);
           // Continue anyway - email is more important
         }
+      } else {
+        console.warn('Supabase not configured - review will only be sent via email');
       }
 
       const formattedMessage = `
@@ -91,6 +106,13 @@ Please review and approve this review in the admin panel.
           rating: 5,
           comment: '',
         });
+        
+        // Log success status
+        if (supabaseSuccess) {
+          console.log('Review submitted successfully - saved to Supabase and email sent');
+        } else {
+          console.warn('Review submitted - email sent but NOT saved to Supabase. Check RLS policies.');
+        }
       } else {
         throw new Error(result.message || 'Failed to submit review');
       }

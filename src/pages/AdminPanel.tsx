@@ -194,6 +194,9 @@ export default function AdminPanel() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Panel - Reviews Management</h1>
           <div className="flex gap-4">
+            <Button onClick={loadReviews} variant="secondary">
+              Refresh
+            </Button>
             <Button onClick={() => navigate('/admin/blog')} variant="secondary">
               Blog Management
             </Button>
