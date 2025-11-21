@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import Container from '../ui/Container';
 import Button from '../ui/Button';
@@ -8,38 +8,70 @@ import { NAV_LINKS } from '../../utils/constants';
 
 export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
 
   const handleScheduleClick = () => {
-    const element = document.getElementById('book-appointment');
-    if (element) {
-      // Get navigation bar height dynamically
-      const nav = document.querySelector('nav');
-      const navHeight = nav ? nav.offsetHeight : 100;
-      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-      const offsetPosition = elementPosition - navHeight - 20; // Extra 20px padding
-      
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+    if (!isHomePage) {
+      navigate('/#book-appointment');
+    } else {
+      const element = document.getElementById('book-appointment');
+      if (element) {
+        // Get navigation bar height dynamically
+        const nav = document.querySelector('nav');
+        const navHeight = nav ? nav.offsetHeight : 100;
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - navHeight - 20; // Extra 20px padding
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
     }
     setIsMobileMenuOpen(false);
   };
 
   const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    if (!isHomePage) {
+      navigate('/');
+    } else {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
   };
 
   const scrollToSection = (targetId?: string) => {
     if (!targetId) return;
-    if (targetId === 'home') {
-      scrollToTop();
+    
+    if (!isHomePage) {
+      // Navigate to home with hash, HomePage will handle scrolling
+      if (targetId === 'home') {
+        navigate('/');
+      } else {
+        navigate(`/#${targetId}`);
+      }
     } else {
-      const element = document.getElementById(targetId);
-      element?.scrollIntoView({ behavior: 'smooth' });
+      // Already on home page, just scroll
+      if (targetId === 'home') {
+        scrollToTop();
+      } else {
+        const element = document.getElementById(targetId);
+        if (element) {
+          const nav = document.querySelector('nav');
+          const navHeight = nav ? nav.offsetHeight : 100;
+          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = elementPosition - navHeight - 20;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }
     }
     setIsMobileMenuOpen(false);
   };
@@ -59,8 +91,8 @@ export default function Navigation() {
       <nav className="bg-white shadow-md">
         <Container>
           <div className="flex justify-between items-center py-4">
-            <button 
-              onClick={scrollToTop}
+            <Link
+              to="/"
               className="text-left focus:outline-none"
             >
               <div className="text-2xl font-bold text-blue-900 hover:text-blue-700 transition-colors">
@@ -69,7 +101,7 @@ export default function Navigation() {
               <div className="text-s text-blue-800 hover:text-blue-600 transition-colors">
                 Abdul Hameed Nainoor Ambulingan Kader Syed
               </div>
-            </button>
+            </Link>
             
             {/* Mobile Menu Button */}
             <button 

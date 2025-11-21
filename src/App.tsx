@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Header, Footer } from './components/layout';
 import { Hero, Services, ReviewsDisplay, ReviewForm } from './components/sections';
 import ImageGallery from './components/sections/ImageGallery';
@@ -12,6 +13,29 @@ import AdminPanel from './pages/AdminPanel';
 import BlogAdminPanel from './pages/BlogAdminPanel';
 
 function HomePage() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Handle hash-based scrolling when component mounts or hash changes
+    if (location.hash) {
+      const hash = location.hash.substring(1); // Remove the # symbol
+      setTimeout(() => {
+        const element = document.getElementById(hash);
+        if (element) {
+          const nav = document.querySelector('nav');
+          const navHeight = nav ? nav.offsetHeight : 100;
+          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = elementPosition - navHeight - 20;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+    }
+  }, [location.hash]);
+
   return (
     <div className="min-h-screen">
       <Header />
