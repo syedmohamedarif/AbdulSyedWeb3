@@ -45,7 +45,7 @@ alter table public.reviews enable row level security;
 
 ## 5. Row Level Security Policies
 
-Add policies so the public site can read approved reviews while only admins can manage them.
+Add policies so the public site can read approved reviews and submit new reviews, while only admins can manage them.
 
 ```sql
 -- Allow anyone to read approved reviews
@@ -54,12 +54,23 @@ on public.reviews
 for select
 using ( approved = true );
 
--- Allow authenticated users to manage reviews
-create policy "Admins can manage reviews"
+-- Allow anyone to insert new reviews (for public review form)
+create policy "Public can insert reviews"
 on public.reviews
-for all
+for insert
+with check ( true );
+
+-- Allow authenticated users to update and delete reviews
+create policy "Admins can update reviews"
+on public.reviews
+for update
 using ( auth.role() = 'authenticated' )
 with check ( auth.role() = 'authenticated' );
+
+create policy "Admins can delete reviews"
+on public.reviews
+for delete
+using ( auth.role() = 'authenticated' );
 ```
 
 ## 6. Create Admin User
