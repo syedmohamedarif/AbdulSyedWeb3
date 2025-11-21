@@ -23,7 +23,8 @@ export const NAV_LINKS = [
   { href: "/#home", label: "Home", targetId: "home" },
   { href: "/#about", label: "About", targetId: "about" },
   { href: "/#services", label: "Services", targetId: "services" },
-  { href: "/#reviews", label: "Reviews", targetId: "reviews" },
+  { href: "/blog", label: "Blog", targetId: undefined },
   { href: "/#contact", label: "Contact", targetId: "contact" },
-  { href: "/#reviews-form", label: "Feedback", targetId: "reviews-form" }
+  { href: "/#reviews-form", label: "Feedback", targetId: "reviews-form" },
+  { href: "/#reviews", label: "Reviews", targetId: "reviews" }
 ];

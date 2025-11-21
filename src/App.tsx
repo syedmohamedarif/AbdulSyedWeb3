@@ -4,8 +4,11 @@ import { Hero, Services, ReviewsDisplay, ReviewForm } from './components/section
 import ImageGallery from './components/sections/ImageGallery';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import Blog from './pages/Blog';
+import BlogPostPage from './pages/BlogPost';
 import AdminLogin from './pages/AdminLogin';
 import AdminPanel from './pages/AdminPanel';
+import BlogAdminPanel from './pages/BlogAdminPanel';
 
 function HomePage() {
   return (
@@ -42,8 +45,11 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/blog" element={<BlogAdminPanel />} />
       </Routes>
     </Router>
   );

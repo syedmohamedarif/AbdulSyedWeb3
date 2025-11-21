@@ -19,6 +19,13 @@ export default function AdminPanel() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      setAuthenticated(false);
+      navigate('/admin/login');
+      return;
+    }
+
     let isMounted = true;
 
     const init = async () => {
@@ -53,6 +60,10 @@ export default function AdminPanel() {
   }, [navigate]);
 
   const loadReviews = async () => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -70,6 +81,10 @@ export default function AdminPanel() {
   };
 
   const handleLogout = async () => {
+    if (!supabase) {
+      navigate('/admin/login');
+      return;
+    }
     try {
       await supabase.auth.signOut();
       navigate('/admin/login');
@@ -80,6 +95,10 @@ export default function AdminPanel() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) {
+      alert('Supabase is not configured. Please set up your environment variables.');
+      return;
+    }
     try {
       if (editingReview?.id) {
         const { error } = await supabase
@@ -130,6 +149,10 @@ export default function AdminPanel() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this review?')) return;
+    if (!supabase) {
+      alert('Supabase is not configured. Please set up your environment variables.');
+      return;
+    }
     try {
       const { error } = await supabase.from('reviews').delete().eq('id', id);
       if (error) throw error;
@@ -141,6 +164,10 @@ export default function AdminPanel() {
   };
 
   const toggleApproval = async (review: Review) => {
+    if (!supabase) {
+      alert('Supabase is not configured. Please set up your environment variables.');
+      return;
+    }
     try {
       const { error } = await supabase
         .from('reviews')
@@ -166,9 +193,14 @@ export default function AdminPanel() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Panel - Reviews Management</h1>
-          <Button onClick={handleLogout} variant="secondary">
-            Logout
-          </Button>
+          <div className="flex gap-4">
+            <Button onClick={() => navigate('/admin/blog')} variant="secondary">
+              Blog Management
+            </Button>
+            <Button onClick={handleLogout} variant="secondary">
+              Logout
+            </Button>
+          </div>
         </div>
 
         {/* Add/Edit Form */}

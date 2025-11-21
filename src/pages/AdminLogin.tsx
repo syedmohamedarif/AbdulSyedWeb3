@@ -15,6 +15,12 @@ export default function AdminLogin() {
     setError('');
     setLoading(true);
 
+    if (!supabase) {
+      setError('Supabase is not configured. Please set up your environment variables.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,

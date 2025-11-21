@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import Container from '../ui/Container';
 import Button from '../ui/Button';
@@ -69,16 +70,31 @@ export default function Navigation() {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-6">
-              {NAV_LINKS.map((link) => (
-                <a 
-                  key={link.label}
-                  href={link.href} 
-                  className="text-gray-600 hover:text-blue-900"
-                  onClick={(event) => handleNavClick(event, link.targetId)}
-                >
-                  {link.label}
-                </a>
-              ))}
+              {NAV_LINKS.map((link) => {
+                if (link.targetId === undefined) {
+                  // Regular route link
+                  return (
+                    <Link
+                      key={link.label}
+                      to={link.href}
+                      className="text-gray-600 hover:text-blue-900"
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                }
+                // Anchor link
+                return (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    className="text-gray-600 hover:text-blue-900"
+                    onClick={(event) => handleNavClick(event, link.targetId)}
+                  >
+                    {link.label}
+                  </a>
+                );
+              })}
               <Button onClick={handleScheduleClick}>Book Appointment</Button>
             </div>
           </div>

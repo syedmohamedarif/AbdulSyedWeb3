@@ -12,6 +12,10 @@ export default function ReviewsDisplay() {
   }, []);
 
   const loadApprovedReviews = async () => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('reviews')

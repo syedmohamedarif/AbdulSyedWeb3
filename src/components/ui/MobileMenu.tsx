@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { NAV_LINKS } from '../../utils/constants';
 import Button from './Button';
@@ -37,16 +38,32 @@ export default function MobileMenu({ isOpen, onClose, onScheduleClick, onNavigat
           <X size={24} />
         </button>
         <div className="flex flex-col items-center justify-center flex-1 space-y-8">
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="text-white text-2xl hover:text-blue-200 transition-colors"
-              onClick={(event) => handleNavClick(event, link.targetId)}
-            >
-              {link.label}
-            </a>
-          ))}
+          {NAV_LINKS.map((link) => {
+            if (link.targetId === undefined) {
+              // Regular route link
+              return (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="text-white text-2xl hover:text-blue-200 transition-colors"
+                  onClick={onClose}
+                >
+                  {link.label}
+                </Link>
+              );
+            }
+            // Anchor link
+            return (
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-white text-2xl hover:text-blue-200 transition-colors"
+                onClick={(event) => handleNavClick(event, link.targetId)}
+              >
+                {link.label}
+              </a>
+            );
+          })}
           <Button 
             variant="secondary" 
             className="mt-8 w-full max-w-xs"
