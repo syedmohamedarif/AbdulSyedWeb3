@@ -4,7 +4,16 @@ export default function Hero() {
   const handleBookAppointment = () => {
     const element = document.getElementById('book-appointment');
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Get navigation bar height dynamically
+      const nav = document.querySelector('nav');
+      const navHeight = nav ? nav.offsetHeight : 100;
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - navHeight - 20; // Extra 20px padding
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   };
 
