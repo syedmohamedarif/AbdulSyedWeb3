@@ -7,7 +7,6 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Blog from './pages/Blog';
 import BlogPostPage from './pages/BlogPost';
-import Feedback from './pages/Feedback';
 import AdminLogin from './pages/AdminLogin';
 import AdminPanel from './pages/AdminPanel';
 import BlogAdminPanel from './pages/BlogAdminPanel';
@@ -51,7 +50,7 @@ function HomePage() {
         </section>
         <ImageGallery />
         <ReviewsDisplay />
-        <section id="reviews-form" className="py-12 md:py-20 bg-white">
+        <section id="feedback" className="py-12 md:py-20 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-2xl">
             <ReviewForm />
           </div>
@@ -72,7 +71,6 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
-        <Route path="/feedback" element={<Feedback />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/blog" element={<BlogAdminPanel />} />

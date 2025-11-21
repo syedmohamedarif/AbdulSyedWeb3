@@ -25,6 +25,6 @@ export const NAV_LINKS = [
   { href: "/#services", label: "Services", targetId: "services" },
   { href: "/blog", label: "Blog", targetId: undefined },
   { href: "/#contact", label: "Contact", targetId: "contact" },
-  { href: "/feedback", label: "Feedback", targetId: undefined },
+  { href: "/#feedback", label: "Feedback", targetId: "feedback" },
   { href: "/#reviews", label: "Reviews", targetId: "reviews" }
 ];
