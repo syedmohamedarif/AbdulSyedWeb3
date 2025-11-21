@@ -5,22 +5,28 @@ Reviews submitted from mobile phones are not showing up in the admin panel for a
 
 ## Common Causes & Solutions
 
-### 1. Supabase RLS Policy Not Set Up
+### 1. Supabase RLS Policy Issues
 
-**Most Common Issue**: The Row Level Security (RLS) policy that allows public users to insert reviews is missing.
+**If you get "policy already exists" error**: The policy exists but might be misconfigured.
 
-**Solution**: Run this SQL in your Supabase SQL Editor:
+**Solution**: Run the complete fix script `FIX_REVIEWS_RLS.sql` which will:
+- Drop all existing policies
+- Recreate them correctly
+- Verify they're working
+
+**Quick Check**: First verify what policies exist:
 
 ```sql
--- Check if policy exists
-SELECT * FROM pg_policies WHERE tablename = 'reviews';
-
--- If "Public can insert reviews" policy doesn't exist, create it:
-CREATE POLICY "Public can insert reviews"
-ON public.reviews
-FOR INSERT
-WITH CHECK ( true );
+SELECT policyname, cmd, with_check
+FROM pg_policies 
+WHERE tablename = 'reviews';
 ```
+
+You should see:
+- "Public can read approved reviews" (SELECT)
+- "Public can insert reviews" (INSERT) ← **This is critical!**
+- "Admins can update reviews" (UPDATE)
+- "Admins can delete reviews" (DELETE)
 
 ### 2. Verify RLS is Enabled
 
