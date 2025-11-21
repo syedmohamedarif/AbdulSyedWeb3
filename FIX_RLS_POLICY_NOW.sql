@@ -2,12 +2,16 @@
 -- Run this ENTIRE script in Supabase SQL Editor
 
 -- Step 1: Drop ALL existing policies on reviews table
-DROP POLICY IF EXISTS "Public can read approved reviews" ON public.reviews;
-DROP POLICY IF EXISTS "Public can insert reviews" ON public.reviews;
-DROP POLICY IF EXISTS "Admins can manage reviews" ON public.reviews;
-DROP POLICY IF EXISTS "Admins can update reviews" ON public.reviews;
-DROP POLICY IF EXISTS "Admins can delete reviews" ON public.reviews;
-DROP POLICY IF EXISTS "Authenticated users can manage reviews" ON public.reviews;
+-- First, let's see what policies exist
+DO $$ 
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN (SELECT policyname FROM pg_policies WHERE tablename = 'reviews' AND schemaname = 'public') 
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON public.reviews', r.policyname);
+    END LOOP;
+END $$;
 
 -- Step 2: Ensure RLS is enabled
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
