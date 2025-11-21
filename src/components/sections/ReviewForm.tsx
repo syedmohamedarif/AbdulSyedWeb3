@@ -18,26 +18,36 @@ export default function ReviewForm() {
   });
   const [loading, setLoading] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setLoading(true);
       setSubmitStatus('idle');
+      setErrorMessage('');
 
-      // Save review as pending in Supabase
-      const { error: supabaseError } = await supabase.from('reviews').insert([
-        {
-          name: formData.name,
-          email: formData.email,
-          rating: formData.rating,
-          comment: formData.comment,
-          approved: false,
-        },
-      ]);
+      // Try to save review as pending in Supabase (optional - don't fail if this doesn't work)
+      if (supabase) {
+        try {
+          const { error: supabaseError } = await supabase.from('reviews').insert([
+            {
+              name: formData.name,
+              email: formData.email,
+              rating: formData.rating,
+              comment: formData.comment,
+              approved: false,
+            },
+          ]);
 
-      if (supabaseError) {
-        throw supabaseError;
+          if (supabaseError) {
+            console.warn('Supabase insert failed (will continue with email):', supabaseError);
+            // Continue anyway - email is more important
+          }
+        } catch (supabaseErr) {
+          console.warn('Supabase error (will continue with email):', supabaseErr);
+          // Continue anyway - email is more important
+        }
       }
 
       const formattedMessage = `
@@ -67,9 +77,13 @@ Please review and approve this review in the admin panel.
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const result = await response.json();
 
-      if (response.ok && result.success) {
+      if (result.success) {
         setSubmitStatus('success');
         setFormData({
           name: '',
@@ -80,9 +94,22 @@ Please review and approve this review in the admin panel.
       } else {
         throw new Error(result.message || 'Failed to submit review');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting review:', error);
       setSubmitStatus('error');
+      
+      // Set user-friendly error message
+      if (error.message) {
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          setErrorMessage('Network error. Please check your internet connection.');
+        } else if (error.message.includes('HTTP error')) {
+          setErrorMessage('Server error. Please try again in a moment.');
+        } else {
+          setErrorMessage(error.message);
+        }
+      } else {
+        setErrorMessage('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -96,7 +123,13 @@ Please review and approve this review in the admin panel.
         <p className="mb-4 text-green-600">Thank you for your review! It will be published after approval.</p>
       )}
       {submitStatus === 'error' && (
-        <p className="mb-4 text-red-600">Error submitting review. Please try again.</p>
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-600 font-semibold">Error submitting review</p>
+          {errorMessage && (
+            <p className="text-red-600 text-sm mt-1">{errorMessage}</p>
+          )}
+          <p className="text-red-600 text-sm mt-1">Please check your internet connection and try again.</p>
+        </div>
       )}
       
       <input
