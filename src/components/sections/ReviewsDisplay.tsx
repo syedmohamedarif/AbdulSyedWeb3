@@ -14,22 +14,61 @@ export default function ReviewsDisplay() {
 
   const loadApprovedReviews = async () => {
     try {
-      const q = query(
-        collection(db, 'reviews'),
-        where('approved', '==', true),
-        orderBy('created_at', 'desc')
-      );
-      const querySnapshot = await getDocs(q);
-      const reviewsData: Review[] = [];
-      querySnapshot.forEach((doc) => {
-        reviewsData.push({
-          id: doc.id,
-          ...doc.data(),
-        } as Review);
-      });
-      setReviews(reviewsData);
-    } catch (error) {
+      // First try with orderBy (requires index)
+      try {
+        const q = query(
+          collection(db, 'reviews'),
+          where('approved', '==', true),
+          orderBy('created_at', 'desc')
+        );
+        const querySnapshot = await getDocs(q);
+        const reviewsData: Review[] = [];
+        querySnapshot.forEach((doc) => {
+          reviewsData.push({
+            id: doc.id,
+            ...doc.data(),
+          } as Review);
+        });
+        // Sort manually as fallback
+        reviewsData.sort((a, b) => {
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return dateB - dateA;
+        });
+        setReviews(reviewsData);
+      } catch (indexError: any) {
+        // If index error, try without orderBy
+        if (indexError.code === 'failed-precondition') {
+          console.log('Index not found, fetching without orderBy...');
+          const q = query(
+            collection(db, 'reviews'),
+            where('approved', '==', true)
+          );
+          const querySnapshot = await getDocs(q);
+          const reviewsData: Review[] = [];
+          querySnapshot.forEach((doc) => {
+            reviewsData.push({
+              id: doc.id,
+              ...doc.data(),
+            } as Review);
+          });
+          // Sort manually
+          reviewsData.sort((a, b) => {
+            const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+            const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+            return dateB - dateA;
+          });
+          setReviews(reviewsData);
+        } else {
+          throw indexError;
+        }
+      }
+    } catch (error: any) {
       console.error('Error loading reviews:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      // Set empty array on error so component doesn't show loading forever
+      setReviews([]);
     } finally {
       setLoading(false);
     }

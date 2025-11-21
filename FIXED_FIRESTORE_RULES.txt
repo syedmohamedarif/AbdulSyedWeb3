@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Reviews collection
+    match /reviews/{reviewId} {
+      // Public users can read approved reviews OR authenticated users can read all
+      allow read: if resource.data.approved == true || request.auth != null;
+      // Anyone can create reviews (for public review form)
+      allow create: if true;
+      // Only authenticated users can update/delete
+      allow update, delete: if request.auth != null;
+    }
+    
+    // Blog posts collection
+    match /blog_posts/{postId} {
+      // Public users can read published posts OR authenticated users can read all
+      allow read: if resource.data.published == true || request.auth != null;
+      // Only authenticated users can create/update/delete
+      allow create, update, delete: if request.auth != null;
+    }
+  }
+}
+
