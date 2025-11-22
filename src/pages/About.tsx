@@ -12,7 +12,7 @@ export default function About() {
       <Container>
         
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8">About Abdul Syed - Best Breast Surgeon in UK & Essex</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8">About Abdul Syed - Consultant Breast Surgeon in Essex, UK</h1>
           
           <Biography className="mb-12" />
           <AreasOfInterest className="mb-12" />
@@ -20,7 +20,7 @@ export default function About() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <img
               src= '/images/half.jpg'
-              alt="Abdul Syed breast surgeon - Leading breast surgeon in Essex and UK providing expert consultation"
+              alt="Abdul Syed breast surgeon - Leading breast surgeon in Essex providing expert consultation"
               className="rounded-lg shadow-lg w-full"
             />
             <ConsultantPosts />

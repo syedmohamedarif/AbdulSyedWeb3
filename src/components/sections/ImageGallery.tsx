@@ -6,15 +6,15 @@ import consultation3 from "/images/pink.png";
 const images = [
   {
     url: consultation1,
-    alt: "Abdul Syed breast surgeon consulting with patient - Best breast surgeon in UK",
+    alt: "Abdul Syed - Consultant breast surgeon in Essex consulting with patient",
   },
   {
     url: consultation2,
-    alt: "Leading breast surgeon in Essex providing expert breast care consultation",
+    alt: "Consultant breast surgeon in Essex providing expert breast care consultation",
   },
   {
     url: consultation3,
-    alt: "Top breast surgeon in UK - Abdul Syed providing comprehensive breast surgery services",
+    alt: "Consultant breast surgeon in Essex - Abdul Syed providing comprehensive breast surgery services",
   },
 ];
 
