@@ -45,7 +45,7 @@ Additional Notes: ${formData.message}
           subject: 'New Appointment Request',
           from_name: formData.name,
           reply_to: formData.email,
-          to_email: 'syedmohamedarif03@gmail.com',
+          to_email: 'abdul.syed6@nhs.net',
           message: formattedMessage,
         }),
       });

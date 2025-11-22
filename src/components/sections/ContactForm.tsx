@@ -47,7 +47,7 @@ export default function ContactForm() {
             subject: 'New Contact Form Submission',
             from_name: `${formData.firstName} ${formData.lastName}`,
             reply_to: formData.email,
-            to_email: 'syedmohamedarif03@gmail.com',
+            to_email: 'abdul.syed6@nhs.net',
             message: `
 Name: ${formData.firstName} ${formData.lastName}
 Email: ${formData.email}

@@ -71,7 +71,7 @@ Please review and approve this review in the admin panel.
           subject: 'New Review Submission',
           from_name: formData.name,
           reply_to: formData.email,
-          to_email: 'syedmohamedarif03@gmail.com',
+          to_email: 'abdul.syed6@nhs.net',
           message: formattedMessage,
         }),
       });
