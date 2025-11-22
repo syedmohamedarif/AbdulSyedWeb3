@@ -9,23 +9,19 @@ export default function About() {
           <div className="lg:w-1/2">
             <img
               src= '/images/half.jpg'
-              alt="Doctor in consultation"
+              alt="Abdul Syed - Best Breast Surgeon in UK and Essex providing expert consultation"
               className="rounded-lg shadow-lg w-full"
             />
           </div>
           <div className="lg:w-1/2">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              About Dr. Smith
+              About Mr Abdul Syed - Best Breast Surgeon in UK
             </h2>
             <p className="text-lg text-gray-600 mb-6">
-              With over 20 years of experience in medical practice, Dr. Smith is dedicated to 
-              providing exceptional care using the latest medical advancements and techniques.
+              As one of the best breast surgeons in the UK and a leading breast surgeon in Essex, Mr Abdul Syed is dedicated to 
+              providing exceptional breast care using the latest oncoplastic surgical techniques and advancements.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="border-l-4 border-blue-900 pl-4">
-                <h3 className="font-bold text-xl mb-2">Education</h3>
-                <p className="text-gray-600">Harvard Medical School</p>
-              </div>
               <div className="border-l-4 border-blue-900 pl-4">
                 <h3 className="font-bold text-xl mb-2">Experience</h3>
                 <p className="text-gray-600">20+ Years Practice</p>
@@ -36,7 +32,7 @@ export default function About() {
               </div>
               <div className="border-l-4 border-blue-900 pl-4">
                 <h3 className="font-bold text-xl mb-2">Languages</h3>
-                <p className="text-gray-600">English, Spanish</p>
+                <p className="text-gray-600">English</p>
               </div>
             </div>
           </div>
