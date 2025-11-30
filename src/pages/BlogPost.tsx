@@ -18,6 +18,7 @@ export default function BlogPostPage() {
 
   const loadBlogPost = async (postSlug: string) => {
     try {
+      console.log('🔄 Loading blog post:', postSlug);
       const q = query(
         collection(db, 'blog_posts'),
         where('slug', '==', postSlug),
@@ -26,13 +27,19 @@ export default function BlogPostPage() {
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
         const doc = querySnapshot.docs[0];
+        const data = doc.data();
+        console.log('✅ Blog post loaded:', data.title, 'Published:', data.published);
         setPost({
           id: doc.id,
-          ...doc.data(),
+          ...data,
         } as BlogPost);
+      } else {
+        console.warn('⚠️ No published blog post found with slug:', postSlug);
       }
-    } catch (error) {
-      console.error('Error loading blog post:', error);
+    } catch (error: any) {
+      console.error('❌ Error loading blog post:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
     } finally {
       setLoading(false);
     }

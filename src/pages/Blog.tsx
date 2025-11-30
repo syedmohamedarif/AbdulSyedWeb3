@@ -15,22 +15,66 @@ export default function Blog() {
 
   const loadBlogPosts = async () => {
     try {
-      const q = query(
+      console.log('🔄 Loading blog posts from Firebase...');
+      
+      // Try the query with orderBy first (requires composite index)
+      let q = query(
         collection(db, 'blog_posts'),
         where('published', '==', true),
         orderBy('created_at', 'desc')
       );
-      const querySnapshot = await getDocs(q);
+      
+      let querySnapshot;
+      try {
+        querySnapshot = await getDocs(q);
+      } catch (indexError: any) {
+        // If index error, try without orderBy and sort in memory
+        console.warn('⚠️ Composite index may be missing, trying alternative query:', indexError);
+        q = query(
+          collection(db, 'blog_posts'),
+          where('published', '==', true)
+        );
+        querySnapshot = await getDocs(q);
+      }
+      
       const postsData: BlogPost[] = [];
       querySnapshot.forEach((doc) => {
-        postsData.push({
-          id: doc.id,
-          ...doc.data(),
-        } as BlogPost);
+        const data = doc.data();
+        // Double-check published status (handle string "true" or boolean true)
+        const isPublished = data.published === true || data.published === 'true';
+        if (isPublished) {
+          postsData.push({
+            id: doc.id,
+            ...data,
+          } as BlogPost);
+        } else {
+          console.warn(`⚠️ Post "${data.title}" has published=${data.published} (expected true)`);
+        }
       });
+      
+      // Sort by created_at if we didn't use orderBy
+      if (postsData.length > 0 && !postsData[0].created_at) {
+        console.warn('⚠️ Some posts may be missing created_at field');
+      }
+      
+      // Sort in memory if needed (fallback)
+      postsData.sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateB - dateA; // Descending order
+      });
+      
+      console.log(`✅ Loaded ${postsData.length} published blog posts`);
       setPosts(postsData);
-    } catch (error) {
-      console.error('Error loading blog posts:', error);
+    } catch (error: any) {
+      console.error('❌ Error loading blog posts:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      
+      // Show user-friendly error
+      if (error.code === 'failed-precondition') {
+        console.error('💡 This might be a missing Firestore index. Check the console for index creation link.');
+      }
     } finally {
       setLoading(false);
     }

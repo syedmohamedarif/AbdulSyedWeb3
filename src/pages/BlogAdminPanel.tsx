@@ -85,18 +85,28 @@ export default function BlogAdminPanel() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Ensure published is a boolean
+      const postData = {
+        ...formData,
+        published: Boolean(formData.published),
+      };
+      
+      console.log('💾 Saving blog post:', postData.title, 'Published:', postData.published);
+      
       if (editingPost?.id) {
         const postRef = doc(db, 'blog_posts', editingPost.id);
         await updateDoc(postRef, {
-          ...formData,
+          ...postData,
           updated_at: new Date().toISOString(),
         });
+        console.log('✅ Blog post updated successfully');
       } else {
         await addDoc(collection(db, 'blog_posts'), {
-          ...formData,
+          ...postData,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
+        console.log('✅ Blog post created successfully');
       }
       setFormData({
         title: '',
@@ -109,9 +119,11 @@ export default function BlogAdminPanel() {
       });
       setEditingPost(null);
       loadPosts();
-    } catch (error) {
-      console.error('Error saving blog post:', error);
-      alert('Error saving blog post. Please try again.');
+    } catch (error: any) {
+      console.error('❌ Error saving blog post:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      alert(`Error saving blog post: ${error.message}`);
     }
   };
 
@@ -141,14 +153,22 @@ export default function BlogAdminPanel() {
 
   const togglePublish = async (post: BlogPost) => {
     try {
+      // Ensure we're working with a boolean
+      const currentStatus = Boolean(post.published);
+      const newPublishedStatus = !currentStatus;
+      console.log(`🔄 Toggling publish status for "${post.title}": ${currentStatus} → ${newPublishedStatus}`);
       const postRef = doc(db, 'blog_posts', post.id!);
       await updateDoc(postRef, {
-        published: !post.published,
+        published: newPublishedStatus, // Explicitly set as boolean
         updated_at: new Date().toISOString(),
       });
+      console.log(`✅ Successfully ${newPublishedStatus ? 'published' : 'unpublished'} blog post`);
       loadPosts();
-    } catch (error) {
-      console.error('Error updating blog post:', error);
+    } catch (error: any) {
+      console.error('❌ Error updating blog post:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      alert(`Error updating blog post: ${error.message}`);
     }
   };
 
